@@ -1,4 +1,4 @@
-import { Button, Form, Input } from "antd";
+import { Button, Checkbox, Form, Input } from "antd";
 import { useRef, useState } from "react";
 import { useRTCPeerConnection } from "src/hooks/rtc-peer-connection";
 import { useWebSocket } from "src/hooks/web-socket";
@@ -12,6 +12,7 @@ export const ChatRoute = () => {
   const selfVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const [textMessage, setTextMessage] = useState<string>("");
+  const [autoConnect, setAutoConnect] = useState<boolean>(false);
 
   const onTextMessage = (text: string) => {
     setTextMessages((prev) => [...prev, { stranger: true, text }]);
@@ -32,6 +33,7 @@ export const ChatRoute = () => {
       selfVideoRef,
       remoteVideoRef,
       send,
+      autoConnect,
       onMessage,
       onTextMessage,
       onConnect,
@@ -59,7 +61,7 @@ export const ChatRoute = () => {
           />
         </div>
       </div>
-      <div className="flex lg:flex-[2]   flex-col gap-3">
+      <div className="flex lg:flex-[2] flex-col gap-3">
         <div className="rounded-md bg-white flex-1 shadow-sm p-2 gap-1 flex flex-col">
           {textMessages.map(({ stranger, text }, index) => (
             <div key={index}>
@@ -73,32 +75,40 @@ export const ChatRoute = () => {
           ))}
         </div>
         <div className="flex gap-3">
-          <Button
-            disabled={connectionState == "connecting"}
-            onClick={() => {
-              switch (connectionState) {
-                case "connected":
-                  return disconnect();
-                case "disconnected":
-                  return start();
-                case "connecting":
-                  return;
-              }
-            }}
-          >
-            {(() => {
-              switch (connectionState) {
-                case "connected":
-                  return "Disconnect";
-                case "disconnected":
-                  return "Start";
-                case "connecting":
-                  return "Connecting";
-                default:
-                  break;
-              }
-            })()}
-          </Button>
+          <div className="flex flex-col">
+            <Button
+              disabled={connectionState == "connecting"}
+              onClick={() => {
+                switch (connectionState) {
+                  case "connected":
+                    return disconnect();
+                  case "disconnected":
+                    return start();
+                  case "connecting":
+                    return;
+                }
+              }}
+            >
+              {(() => {
+                switch (connectionState) {
+                  case "connected":
+                    return "Disconnect";
+                  case "disconnected":
+                    return "Start";
+                  case "connecting":
+                    return "Connecting";
+                  default:
+                    break;
+                }
+              })()}
+            </Button>
+            <Checkbox
+              checked={autoConnect}
+              onChange={(e) => setAutoConnect(e.target.checked)}
+            >
+              Auto connect
+            </Checkbox>
+          </div>
           <Form
             className="flex gap-3 flex-1"
             onFinish={() => {
@@ -126,6 +136,7 @@ export const ChatRoute = () => {
             <Button
               disabled={textMessage == ""}
               htmlType="submit"
+              className="h-full"
             >
               Send
             </Button>

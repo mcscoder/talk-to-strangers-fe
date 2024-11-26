@@ -6,6 +6,7 @@ export const useRTCPeerConnection = (
   selfVideoRef: React.RefObject<HTMLVideoElement>,
   remoteVideoRef: React.RefObject<HTMLVideoElement>,
   send: (message: string | object) => void,
+  autoConnect: boolean = false,
   onMessage: (action: (ev: MessageEvent) => void) => void,
   onTextMessage: (text: string) => void = () => {},
   onConnect: () => void = () => {},
@@ -33,6 +34,10 @@ export const useRTCPeerConnection = (
     onDisconnect();
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = null;
+    }
+
+    if (autoConnect) {
+      start();
     }
   };
 
