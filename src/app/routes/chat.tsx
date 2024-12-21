@@ -1,6 +1,6 @@
 import { Button, Checkbox, Form, Input } from "antd";
 import { useRef, useState } from "react";
-import { useRTCPeerConnection } from "src/hooks/rtc-peer-connection";
+import { useRTCPeerConnection } from "src/hooks/rtc-peer-connection.test";
 import { useWebSocket } from "src/hooks/web-socket";
 import { TextMessage } from "src/types";
 import { createWSMessage } from "src/utils";

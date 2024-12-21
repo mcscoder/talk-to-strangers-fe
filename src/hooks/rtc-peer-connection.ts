@@ -81,7 +81,9 @@ export const useRTCPeerConnection = (
     pc: RTCPeerConnection,
     recipientSessionId: string
   ) => {
+    console.log("setup handle ice candidate");
     pc.onicecandidate = ({ candidate }) => {
+      console.log("send candidate");
       const message = createWSMessage({
         type: "candidate",
         data: candidate,
@@ -97,6 +99,7 @@ export const useRTCPeerConnection = (
 
       switch (type) {
         case "offer": {
+          console.log("offer");
           await handleConnect(pc, senderSessionId!, data);
           await pc.setLocalDescription();
           send(
@@ -109,11 +112,13 @@ export const useRTCPeerConnection = (
           break;
         }
         case "answer": {
+          console.log("answer");
           await handleConnect(pc, senderSessionId!, data);
 
           break;
         }
         case "candidate": {
+          console.log("candidate");
           await pc.addIceCandidate(data as RTCIceCandidateInit);
           break;
         }

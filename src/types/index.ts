@@ -1,4 +1,6 @@
 export type WSMessageType =
+  | "start"
+  | "found"
   | "candidate"
   | "offer"
   | "answer"

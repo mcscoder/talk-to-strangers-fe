@@ -15,3 +15,7 @@ export function createWSMessage(
   }
   return message;
 }
+
+export const parseWSMessage = (message: string) => {
+  return JSON.parse(message) as WSMessage;
+};
