@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ConnectionState } from "src/types";
 import { createWSMessage, parseWSMessage } from "src/utils";
 
@@ -12,6 +12,7 @@ export const useRTCPeerConnection = (
   onConnect: () => void = () => {},
   onDisconnect: () => void = () => {}
 ) => {
+  const globalPc = useRef<RTCPeerConnection | null>(null);
   const [recipientSessionId, setRecipientSessionId] = useState<string>("");
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("disconnected");
@@ -20,16 +21,16 @@ export const useRTCPeerConnection = (
     remoteVideoRef: React.RefObject<HTMLVideoElement>
   ) => {
     const iceServers = [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun.l.google.com:5349" },
-      { urls: "stun:stun1.l.google.com:3478" },
-      { urls: "stun:stun1.l.google.com:5349" },
-      { urls: "stun:stun2.l.google.com:19302" },
-      { urls: "stun:stun2.l.google.com:5349" },
-      { urls: "stun:stun3.l.google.com:3478" },
-      { urls: "stun:stun3.l.google.com:5349" },
-      { urls: "stun:stun4.l.google.com:19302" },
-      { urls: "stun:stun4.l.google.com:5349" },
+      // { urls: "stun:stun.l.google.com:19302" },
+      // { urls: "stun:stun.l.google.com:5349" },
+      // { urls: "stun:stun1.l.google.com:3478" },
+      // { urls: "stun:stun1.l.google.com:5349" },
+      // { urls: "stun:stun2.l.google.com:19302" },
+      // { urls: "stun:stun2.l.google.com:5349" },
+      // { urls: "stun:stun3.l.google.com:3478" },
+      // { urls: "stun:stun3.l.google.com:5349" },
+      // { urls: "stun:stun4.l.google.com:19302" },
+      // { urls: "stun:stun4.l.google.com:5349" },
     ];
     const pc = new RTCPeerConnection({ iceServers });
 
@@ -40,6 +41,8 @@ export const useRTCPeerConnection = (
         }
       };
     };
+
+    globalPc.current = pc;
 
     return pc;
   };
@@ -86,6 +89,11 @@ export const useRTCPeerConnection = (
   // 3. Remove "srcObject" from "remoteVideoRef"
   // 4. Reconnect if "autoConnect" is true
   const handleDisconnect = () => {
+    if (globalPc.current) {
+      globalPc.current.close();
+      globalPc.current = null;
+    }
+
     // 1. Set connection state to "disconnected"
     setConnectionState("disconnected");
 
