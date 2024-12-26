@@ -5,6 +5,7 @@ export type WSMessageType =
   | "offer"
   | "answer"
   | "disconnect"
+  | "sensitive"
   | "text";
 
 export type WSMessage = {

@@ -32,17 +32,22 @@ export const ChatRoute = () => {
     setTextMessages([]);
   };
 
-  const { recipientSessionId, start, disconnect, connectionState } =
-    useRTCPeerConnection(
-      selfVideoRef,
-      remoteVideoRef,
-      send,
-      autoConnect,
-      onMessage,
-      onTextMessage,
-      onConnect,
-      onDisconnect
-    );
+  const {
+    recipientSessionId,
+    start,
+    disconnect,
+    sensitiveContentDetected,
+    connectionState,
+  } = useRTCPeerConnection(
+    selfVideoRef,
+    remoteVideoRef,
+    send,
+    autoConnect,
+    onMessage,
+    onTextMessage,
+    onConnect,
+    onDisconnect
+  );
 
   useEffect(() => {
     (async () => {
@@ -65,16 +70,14 @@ export const ChatRoute = () => {
           const predictions = await nsfwModel.classify(canvas);
           console.log("Predictions:", JSON.stringify(predictions));
 
-          // Xử lý kết quả phát hiện
+          // Handle prediction results
           const nsfwScore =
             predictions.find(
               (p) => p.className === "Porn" || p.className === "Sexy"
             )?.probability || 0;
           console.log(nsfwScore);
           if (nsfwScore > 0.6) {
-            disconnect();
-            console.warn("NSFW content detected!");
-            alert("Sensitive content");
+            sensitiveContentDetected();
           }
         }
       }, 1000);

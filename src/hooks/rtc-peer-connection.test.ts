@@ -217,6 +217,14 @@ export const useRTCPeerConnection = (
           handleDisconnect();
           break;
         }
+        case "sensitive": {
+          console.log("sensitive content detected");
+          alert(
+            "The stranger has disconnected because shared sensitive content"
+          );
+          handleDisconnect();
+          break;
+        }
         case "text": {
           onTextMessage(data as string);
           break;
@@ -251,7 +259,6 @@ export const useRTCPeerConnection = (
       });
       if (selfVideoRef.current && !selfVideoRef.current.srcObject) {
         selfVideoRef.current.srcObject = stream;
-        onInitializeSelfVideo();
       }
 
       // 4. Send a message with "start" type
@@ -272,6 +279,24 @@ export const useRTCPeerConnection = (
     }
   };
 
+  // Sensitive content detected
+  // 1. Send a message with type "sensitive" to the recipient
+  // 2. Disconnect the p2p connection
+  // 3. Display an alert
+  const sensitiveContentDetected = () => {
+    if (recipientSessionId) {
+      // 1. Send a message with type "sensitive" to the recipient
+      send(createWSMessage({ type: "sensitive", recipientSessionId }));
+
+      // 2. Disconnect the p2p connection
+      handleDisconnect();
+
+      // 3. Display an alert
+      console.warn("NSFW content detected!");
+      alert("Sensitive content detected!");
+    }
+  };
+
   // Handle disconnected by closing tab or browser
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -283,5 +308,11 @@ export const useRTCPeerConnection = (
     };
   }, [recipientSessionId]);
 
-  return { start, disconnect, connectionState, recipientSessionId };
+  return {
+    start,
+    disconnect,
+    sensitiveContentDetected,
+    connectionState,
+    recipientSessionId,
+  };
 };
