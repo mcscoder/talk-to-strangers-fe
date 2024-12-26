@@ -1,5 +1,6 @@
 import { Button, Checkbox, Form, Input } from "antd";
-import { useRef, useState } from "react";
+import * as nsfwjs from "nsfwjs";
+import { useEffect, useRef, useState } from "react";
 import { useRTCPeerConnection } from "src/hooks/rtc-peer-connection.test";
 import { useWebSocket } from "src/hooks/web-socket";
 import { TextMessage } from "src/types";
@@ -13,6 +14,9 @@ export const ChatRoute = () => {
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const [textMessage, setTextMessage] = useState<string>("");
   const [autoConnect, setAutoConnect] = useState<boolean>(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const [nsfwModel, setNsfwModel] = useState<nsfwjs.NSFWJS | null>(null);
 
   const onTextMessage = (text: string) => {
     setTextMessages((prev) => [...prev, { stranger: true, text }]);
@@ -40,6 +44,51 @@ export const ChatRoute = () => {
       onDisconnect
     );
 
+  useEffect(() => {
+    (async () => {
+      setNsfwModel(await nsfwjs.load("InceptionV3"));
+      console.log("NSFW model loaded.");
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (connectionState === "connected") {
+      const video = selfVideoRef.current!;
+      const canvas = canvasRef.current!;
+      const context = canvas.getContext("2d");
+      canvas.width = video.clientWidth;
+      canvas.height = video.clientHeight;
+
+      const intervalId = setInterval(async () => {
+        if (context && nsfwModel) {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const predictions = await nsfwModel.classify(canvas);
+          console.log("Predictions:", JSON.stringify(predictions));
+
+          // Xử lý kết quả phát hiện
+          const nsfwScore =
+            predictions.find(
+              (p) => p.className === "Porn" || p.className === "Sexy"
+            )?.probability || 0;
+          console.log(nsfwScore);
+          if (nsfwScore > 0.6) {
+            disconnect();
+            console.warn("NSFW content detected!");
+            alert("Sensitive content");
+          }
+        }
+      }, 1000);
+
+      return () => {
+        clearInterval(intervalId);
+      };
+    }
+  }, [connectionState]);
+
+  if (!nsfwModel) {
+    return <>Loading model...</>;
+  }
+
   return (
     <div className="flex flex-col gap-3 p-4 flex-1 lg:flex-row">
       <div className="flex-1 grid grid-rows-2 gap-3">
@@ -60,6 +109,10 @@ export const ChatRoute = () => {
             className="absolute inset-0 size-full object-cover"
           />
         </div>
+        <canvas
+          ref={canvasRef}
+          style={{ display: "none" }}
+        />
       </div>
       <div className="flex lg:flex-[2] flex-col gap-3">
         <div className="rounded-md bg-white flex-1 shadow-sm p-2 gap-1 flex flex-col">

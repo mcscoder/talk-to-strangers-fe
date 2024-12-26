@@ -20,19 +20,20 @@ export const useRTCPeerConnection = (
   const initPeerConnection = (
     remoteVideoRef: React.RefObject<HTMLVideoElement>
   ) => {
-    const iceServers = [
-      // { urls: "stun:stun.l.google.com:19302" },
-      // { urls: "stun:stun.l.google.com:5349" },
-      // { urls: "stun:stun1.l.google.com:3478" },
-      // { urls: "stun:stun1.l.google.com:5349" },
-      // { urls: "stun:stun2.l.google.com:19302" },
-      // { urls: "stun:stun2.l.google.com:5349" },
-      // { urls: "stun:stun3.l.google.com:3478" },
-      // { urls: "stun:stun3.l.google.com:5349" },
-      // { urls: "stun:stun4.l.google.com:19302" },
-      // { urls: "stun:stun4.l.google.com:5349" },
-    ];
-    const pc = new RTCPeerConnection({ iceServers });
+    // const iceServers = [
+    // { urls: "stun:stun.l.google.com:19302" },
+    // { urls: "stun:stun.l.google.com:5349" },
+    // { urls: "stun:stun1.l.google.com:3478" },
+    // { urls: "stun:stun1.l.google.com:5349" },
+    // { urls: "stun:stun2.l.google.com:19302" },
+    // { urls: "stun:stun2.l.google.com:5349" },
+    // { urls: "stun:stun3.l.google.com:3478" },
+    // { urls: "stun:stun3.l.google.com:5349" },
+    // { urls: "stun:stun4.l.google.com:19302" },
+    // { urls: "stun:stun4.l.google.com:5349" },
+    // ];
+    // const pc = new RTCPeerConnection({ iceServers });
+    const pc = new RTCPeerConnection();
 
     pc.ontrack = ({ track, streams }) => {
       track.onunmute = () => {
@@ -250,6 +251,7 @@ export const useRTCPeerConnection = (
       });
       if (selfVideoRef.current && !selfVideoRef.current.srcObject) {
         selfVideoRef.current.srcObject = stream;
+        onInitializeSelfVideo();
       }
 
       // 4. Send a message with "start" type
